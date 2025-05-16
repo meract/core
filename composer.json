@@ -1,0 +1,19 @@
+{
+    "name": "meract/core",
+    "description": "Core components of the Meract PHP framework",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.1",
+        "ext-pdo": "*",
+        "psr/http-message": "^1.0",
+        "psr/container": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Meract\\Core\\": "src/"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
