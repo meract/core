@@ -3,16 +3,18 @@ namespace Meract\Core;
 
 class ScriptBuilder {
     private static $manifest = [];
-    private const SOURCE_DIR = __DIR__ . '/../../app/scripts';
-    private const OUTPUT_DIR = __DIR__ . '/../../storage/scripts';
+    private static string $SOURCE_DIR = "";
+    private static string $OUTPUT_DIR = "";
 
     public static function build(): void {
+    self::$SOURCE_DIR = base_path("app/scripts");
+    self::$OUTPUT_DIR = base_path("storage/scripts");
         self::ensureOutputDirExists();
         self::$manifest = [];
 
         // Рекурсивный поиск JS-файлов
         $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator(self::SOURCE_DIR)
+            new \RecursiveDirectoryIterator(self::$SOURCE_DIR)
         );
 
         foreach ($files as $file) {
@@ -27,7 +29,7 @@ class ScriptBuilder {
 
             // Хеш учитывает относительный путь, чтобы избежать коллизий
             $hash = md5($relativePath . $minified);
-            $outputFile = self::OUTPUT_DIR . '/' . $hash . '.js';
+            $outputFile = self::$OUTPUT_DIR . '/' . $hash . '.js';
 
             file_put_contents($outputFile, $minified);
 
@@ -36,23 +38,25 @@ class ScriptBuilder {
             }
         }
 
-		
+    
 
-        file_put_contents(self::OUTPUT_DIR . '/manifest.json', json_encode(self::$manifest));
+        file_put_contents(self::$OUTPUT_DIR . '/manifest.json', json_encode(self::$manifest));
     }
 
     public static function getScriptsForPath(string $path): string {
-        if (!file_exists(self::OUTPUT_DIR . '/manifest.json')) {
+    self::$SOURCE_DIR = base_path("app/scripts");
+    self::$OUTPUT_DIR = base_path("storage/scripts");
+        if (!file_exists(self::$OUTPUT_DIR . '/manifest.json')) {
             return '';
         }
 
-        $manifest = json_decode(file_get_contents(self::OUTPUT_DIR . '/manifest.json'), true);
+        $manifest = json_decode(file_get_contents(self::$OUTPUT_DIR . '/manifest.json'), true);
         $result = '';
 
         foreach ($manifest as $pattern => $hashes) {
             if (self::matchPath($path, $pattern)) {
                 foreach ($hashes as $hash) {
-                    $result .= file_get_contents(self::OUTPUT_DIR . '/' . $hash . '.js') . "\n";
+                    $result .= file_get_contents(self::$OUTPUT_DIR . '/' . $hash . '.js') . "\n";
                 }
             }
         }
@@ -61,7 +65,7 @@ class ScriptBuilder {
     }
 
     private static function getRelativePath(string $absolutePath): string {
-        return str_replace(self::SOURCE_DIR . '/', '', $absolutePath);
+        return str_replace(self::$SOURCE_DIR . '/', '', $absolutePath);
     }
 
     private static function parseConditions(string $content): array {
@@ -75,12 +79,12 @@ class ScriptBuilder {
     }
 
     private static function minify(string $code): string {
-		return \JShrink\Minifier::minify($code);
-	}
+    return \JShrink\Minifier::minify($code);
+  }
 
     private static function ensureOutputDirExists(): void {
-        if (!is_dir(self::OUTPUT_DIR)) {
-            mkdir(self::OUTPUT_DIR, 0755, true);
+        if (!is_dir(self::$OUTPUT_DIR)) {
+            mkdir(self::$OUTPUT_DIR, 0755, true);
         }
     }
 }
