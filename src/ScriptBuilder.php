@@ -1,3 +1,4 @@
+
 <?php
 namespace Meract\Core;
 
@@ -7,8 +8,6 @@ class ScriptBuilder {
     private static string $OUTPUT_DIR = "";
 
     public static function build(): void {
-    self::$SOURCE_DIR = base_path("app/scripts");
-    self::$OUTPUT_DIR = base_path("storage/scripts");
         self::ensureOutputDirExists();
         self::$manifest = [];
 
@@ -43,9 +42,12 @@ class ScriptBuilder {
         file_put_contents(self::$OUTPUT_DIR . '/manifest.json', json_encode(self::$manifest));
     }
 
+	public static function config(array $config){
+		self::$SOURCE_DIR = $config['source'];
+		self::$OUTPUT_DIR = $config['output'];
+	}
+	
     public static function getScriptsForPath(string $path): string {
-    self::$SOURCE_DIR = base_path("app/scripts");
-    self::$OUTPUT_DIR = base_path("storage/scripts");
         if (!file_exists(self::$OUTPUT_DIR . '/manifest.json')) {
             return '';
         }
