@@ -207,7 +207,7 @@ class Route
 			if (file_exists(base_path("app/morph-triggers/". $data['trigger'] . '.php'))) {
 				return (new Response())->body(json_encode((require base_path("app/morph-triggers/". $data['trigger'] . '.php'))($request->parameters)))->header("Content-Type", "application/json");
 			} else {return (new Response('{"error" : "not found"', 404));}
-			
+
 		});
 
 		// Регистрация маршрута для тем
@@ -481,7 +481,9 @@ class Route
 						}
 					}
 
-					return $callback($request, $routeData);
+
+					return self::handleAndParseError($callback, $request, $routeData);
+
 				}
 			}
 
@@ -538,7 +540,8 @@ class Route
 					}
 				}
 
-				return $callback($request, $routeData);
+				return self::handleAndParseError($callback, $request, $routeData);
+
 			}
 		}
 
@@ -559,6 +562,39 @@ class Route
 		}
 
 		return new Response("Not Found", 404);
+	}
+
+	private static function handleAndParseError($callback, $request, $routeData){
+				try {
+					$result = $callback($request, $routeData);
+				} catch (\Throwable $e) {
+					$traces = $e->getTrace();
+					$traceResult = [];
+					foreach($traces as $trace) {
+						$traceResult[] = [
+							"file" => $trace['file'],
+							"line" => $trace['line'],
+							"context" => getSurroundingLines($trace['file'], $trace['line'])
+						];
+					}
+					return new Response(new View('error', [
+						'message' => $e->getMessage(),
+						'file' => $e->getFile(),
+						'line' => $e->getLine(),
+						'context' => getSurroundingLines($e->getFile(), (int)$e->getLine()),
+						'traces' => $traceResult 
+					]), 500);
+				} if (!($result instanceof Response)) {
+				return new Response(new View('error', [
+					'message' => 'The return value is not of type "Response"',
+					'file' => '',
+					'line' => '',
+					'context' => '',
+					'traces' => []
+				]), 500);
+					} else {
+						return $result;
+					}
 	}
 
 	/**

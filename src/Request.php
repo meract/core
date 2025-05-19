@@ -90,6 +90,10 @@ class Request
 		$cookies = [];
 		$parameters = [];
 
+		parse_str(explode("?", $uri)[1], $parameters); // Парсим гет параметры из url Добавляя их в массив параметров
+		
+
+
 		foreach ($lines as $line) {
 			if (strpos($line, ': ') !== false) {
 				list($key, $value) = explode(': ', $line, 2);
@@ -115,6 +119,8 @@ class Request
 				parse_str($body, $parameters);
 			}
 		}
+
+		
 
 		// Создание объекта запроса
 		$request = new static($method, $uri, $headers);
