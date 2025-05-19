@@ -37,6 +37,7 @@ class BaseViewCompiler implements ViewCompilerInterface
     $morph = "
 			<script>".file_get_contents(base_path('meract/client/morph.js'))."</script>
 			<script>".file_get_contents(base_path('meract/client/ui.js'))."</script>
+			<script>".file_get_contents(base_path('meract/client/utils.js'))."</script>
 			<script>".file_get_contents(base_path('meract/client/morph-http.js'))."</script>
 			<script>".file_get_contents(base_path('meract/client/morph-triggers.js'))."</script>
 			<style>".file_get_contents(base_path('meract/client/morph.css'))."</style>
